@@ -1,0 +1,38 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "2722",
+    "database": "hr-onboarding-db",
+    "host": "localhost",
+    "port": 5432,
+    "dialect": "postgres",
+    "define": {
+      "underscored": true,
+      "timestamps": false
+    }
+  },
+  "test": {
+    "username": "postgres",
+    "password": "2722",
+    "database": "hr-onboarding-db",
+    "host": "localhost",
+    "port": 5432,
+    "dialect": "postgres",
+    "define": {
+      "underscored": true,
+      "timestamps": false
+    }
+  },
+  "production": {
+    "username": "postgres",
+    "password": "2722",
+    "database": "hr-onboarding-db",
+    "host": "localhost",
+    "port": 5432,
+    "dialect": "postgres",
+    "define": {
+      "underscored": true,
+      "timestamps": false
+    }
+  }
+}
