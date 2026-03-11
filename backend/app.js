@@ -8,7 +8,6 @@ const authController = require('./controllers/authController');
 const userController = require('./controllers/userController');
 const lessonController = require('./controllers/lessonController');
 const userProgressController = require('./controllers/userProgressController');
-const quizResultController = require('./controllers/quizResultController');
 const billingController = require('./controllers/billingController');
 
 const app = express();
@@ -58,8 +57,6 @@ app.delete('/admin/lessons/:id', authenticateToken, checkAdmin, lessonController
 app.get('/progress', authenticateToken, userProgressController.getMyProgress);
 app.post('/progress', authenticateToken, userProgressController.upsertProgress);
 
-app.get('/quiz-results', authenticateToken, quizResultController.getMyQuizResults);
-app.post('/quiz-results', authenticateToken, quizResultController.createQuizResult);
 app.post('/billing/activate-premium', authenticateToken, billingController.activatePremium);
 
 app.use((req, res) => {

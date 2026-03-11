@@ -21,7 +21,6 @@ exports.register = async (req, res) => {
       name: user.name,
       email: user.email,
       isSubscribed: user.isSubscribed,
-      subscriptionTier: user.subscriptionTier,
       createdAt: user.createdAt,
     });
   } catch (err) {

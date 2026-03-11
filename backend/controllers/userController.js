@@ -4,7 +4,7 @@ const { User } = require('../models');
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
-      attributes: ['id', 'name', 'email', 'isSubscribed', 'subscriptionTier', 'createdAt'],
+      attributes: ['id', 'name', 'email', 'isSubscribed', 'createdAt'],
     });
 
     if (!user) {
@@ -22,7 +22,7 @@ exports.getProfile = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
-      attributes: ['id', 'name', 'email', 'isSubscribed', 'subscriptionTier', 'createdAt'],
+      attributes: ['id', 'name', 'email', 'isSubscribed', 'createdAt'],
       order: [['createdAt', 'DESC']],
     });
 
@@ -36,7 +36,7 @@ exports.getAllUsers = async (req, res) => {
 // Обновить пользователя
 exports.updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, email, password, isSubscribed, subscriptionTier } = req.body;
+  const { name, email, password, isSubscribed } = req.body;
 
   if (id !== req.user.id) {
     return res.status(403).json({ error: 'Нет прав для редактирования этого пользователя' });
@@ -54,7 +54,6 @@ exports.updateUser = async (req, res) => {
     if (email !== undefined) updateData.email = email;
     if (password !== undefined) updateData.passwordHash = password;
     if (isSubscribed !== undefined) updateData.isSubscribed = isSubscribed;
-    if (subscriptionTier !== undefined) updateData.subscriptionTier = subscriptionTier;
 
     await user.update(updateData);
 
@@ -63,7 +62,6 @@ exports.updateUser = async (req, res) => {
       name: user.name,
       email: user.email,
       isSubscribed: user.isSubscribed,
-      subscriptionTier: user.subscriptionTier,
       createdAt: user.createdAt,
     });
   } catch (err) {

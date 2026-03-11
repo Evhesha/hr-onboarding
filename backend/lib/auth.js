@@ -8,7 +8,6 @@ function toAuthUser(user) {
     name: user.name,
     email: user.email,
     isSubscribed: user.isSubscribed,
-    subscriptionTier: user.subscriptionTier,
   };
 }
 

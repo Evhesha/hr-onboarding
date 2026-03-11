@@ -22,7 +22,7 @@ const authenticateToken = (req, res, next) => {
 
 // Проверка роли администратора
 const checkAdmin = (req, res, next) => {
-  if (req.user.subscriptionTier !== 'admin' && req.user.isAdmin !== true) {
+  if (req.user.isAdmin !== true) {
     return res.status(403).json({ error: 'Требуются права администратора' });
   }
   next();

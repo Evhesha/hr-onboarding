@@ -18,10 +18,11 @@ const base = {
 
 const localConfig = {
   ...base,
-  url: process.env.DATABASE_URL || "postgres://localhost:5432/db", 
-  dialectOptions: {
-    ssl: { require: true, rejectUnauthorized: false }
-  }
+  username,
+  password,
+  database,
+  host,
+  port,
 };
 
 

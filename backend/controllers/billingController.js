@@ -9,10 +9,9 @@ exports.activatePremium = async (req, res) => {
       return res.status(404).json({ error: 'Пользователь не найден' });
     }
 
-    if (!user.isSubscribed || user.subscriptionTier !== 'premium') {
+    if (!user.isSubscribed) {
       await user.update({
         isSubscribed: true,
-        subscriptionTier: 'premium',
       });
     }
 
