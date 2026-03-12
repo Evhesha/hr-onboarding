@@ -1,7 +1,30 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+
+const COOKIE_NAME = "assessment_results";
+
+type StoredResults = {
+  updatedAt: string;
+  latestTestId: string;
+  results: Record<string, { score: number; completedAt: string }>;
+};
+
+const readResultsCookie = (): StoredResults | null => {
+  if (typeof document === "undefined") return null;
+  const raw = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(`${COOKIE_NAME}=`));
+  if (!raw) return null;
+  const value = raw.split("=").slice(1).join("=");
+  try {
+    return JSON.parse(decodeURIComponent(value)) as StoredResults;
+  } catch {
+    return null;
+  }
+};
 
 const competencies = [
   { label: "Feedback", level: "Low", tone: "text-rose-600", chip: "bg-rose-100 text-rose-700" },
@@ -16,25 +39,45 @@ const learningBlocks = [
     title: "Feedback",
     description: "Build confidence in tough conversations and growth plans.",
     tags: ["Micro-lesson (free)", "Mini quiz (free)"],
+    slug: "feedback",
   },
   {
     title: "Delegation",
     description: "Translate goals into clear ownership without micromanaging.",
     tags: ["Micro-lesson (free)", "Mini quiz (free)"],
+    slug: "delegation",
   },
   {
     title: "Conflict Management",
     description: "De-escalate tension and keep teams aligned under pressure.",
     tags: ["Micro-lesson (free)", "Mini quiz (free)"],
+    slug: "conflict-management",
   },
   {
     title: "Motivation",
     description: "Sustain energy, autonomy, and accountability in your team.",
     tags: ["Micro-lesson (free)", "Mini quiz (free)"],
+    slug: "motivation",
   },
 ];
 
+const assessmentLabels: Record<string, string> = {
+  feedback: "Feedback",
+  delegation: "Delegation",
+  motivation: "Motivation",
+  conflict: "Conflict",
+};
+
 export default function HomePage() {
+  const [latestResult, setLatestResult] = useState<{ score: number; completedAt: string; testId: string } | null>(null);
+
+  useEffect(() => {
+    const saved = readResultsCookie();
+    if (!saved?.latestTestId) return;
+    const result = saved.results?.[saved.latestTestId];
+    if (result) setLatestResult({ ...result, testId: saved.latestTestId });
+  }, []);
+
   return (
     <div className="space-y-12">
       <section className="relative overflow-hidden rounded-[32px] border border-white/60 bg-white/80 p-6 shadow-lg backdrop-blur md:p-10">
@@ -109,12 +152,12 @@ export default function HomePage() {
             </span>
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
+            <Link
+              href="/assessment"
               className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
             >
               Take the assessment <ArrowRight size={16} />
-            </button>
+            </Link>
             <button
               type="button"
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
@@ -122,6 +165,15 @@ export default function HomePage() {
               See sample questions
             </button>
           </div>
+          {latestResult ? (
+            <div className="mt-5 rounded-2xl border border-teal-200 bg-teal-50/60 px-4 py-3 text-sm text-teal-800">
+              Last assessment: {latestResult.score}/10 • {new Date(latestResult.completedAt).toLocaleString()}
+            </div>
+          ) : (
+            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              Take the free test to personalize your learning path.
+            </div>
+          )}
         </div>
 
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
@@ -133,7 +185,11 @@ export default function HomePage() {
                 The lowest petal is highlighted to focus the first training sprint.
               </p>
             </div>
-            <span className="rounded-full bg-rose-100 px-2 py-1 text-xs font-semibold text-rose-700">Low: Feedback</span>
+            <span className="rounded-full bg-rose-100 px-2 py-1 text-xs font-semibold text-rose-700">
+              {latestResult
+                ? `Latest: ${assessmentLabels[latestResult.testId] ?? latestResult.testId} ${latestResult.score}/10`
+                : "Low: Feedback"}
+            </span>
           </div>
 
           <div className="mt-6 flex items-center gap-6">
@@ -170,12 +226,12 @@ export default function HomePage() {
           <p className="mt-2 text-sm text-slate-600">
             Start with the low-competency module and build momentum with quick wins.
           </p>
-          <button
-            type="button"
+          <Link
+            href="/learning"
             className="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
             Start learning <ArrowRight size={16} />
-          </button>
+          </Link>
         </div>
         <div className="rounded-3xl border border-teal-200 bg-gradient-to-br from-teal-50 via-white to-slate-50 p-6 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">Premium Path</p>
@@ -192,29 +248,19 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="curriculum" className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Learning Blocks</p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-900 md:text-3xl">Four focused modules</h2>
+            <p className="mt-2 text-sm text-slate-600">Each block: micro-lesson + mini quiz (free).</p>
           </div>
-          <span className="text-sm text-slate-500">Each block: micro-lesson + mini quiz (free)</span>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {learningBlocks.map((block) => (
-            <div key={block.title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900">{block.title}</h3>
-              <p className="mt-2 text-sm text-slate-600">{block.description}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {block.tags.map((tag) => (
-                  <span key={tag} className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
+          <Link
+            href="/learning"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
+          >
+            Open modules <ArrowRight size={16} />
+          </Link>
         </div>
       </section>
     </div>
