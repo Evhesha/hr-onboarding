@@ -1,17 +1,60 @@
 import Link from "next/link";
 import { Lock } from "lucide-react";
+import { useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 
 type PaywallMode = "auth" | "premium";
 
-export function PaywallOverlay({ lessonTitle, mode }: { lessonTitle: string; mode: PaywallMode }) {
-  const { isAuthenticated } = useAuth();
+export function PaywallOverlay({
+  lessonTitle,
+  lessonId,
+  mode,
+}: {
+  lessonTitle: string;
+  lessonId?: string;
+  mode: PaywallMode;
+}) {
+  const { isAuthenticated, user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const ctaHref = mode === "auth" ? "/auth" : isAuthenticated ? "/premium" : "/auth";
   const ctaLabel = mode === "auth" ? "Sign in or create account" : isAuthenticated ? "Continue to checkout" : "Create account";
   const title = mode === "auth" ? "Members only" : "Upgrade to Premium";
   const description = mode === "auth"
     ? "This lesson is available to signed-in learners only."
     : "This lesson is included with Premium access.";
+
+  const startLessonCheckout = async () => {
+    if (!lessonId) return;
+    setError(null);
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: user?.name || "",
+          email: user?.email || "",
+          purchaseType: "lesson",
+          lessonSlug: lessonId,
+          lessonTitle,
+          source: "lesson-paywall",
+        }),
+      });
+
+      const payload = (await response.json()) as { url?: string; error?: string };
+
+      if (!response.ok || !payload.url) {
+        throw new Error(payload.error || "Unable to create Stripe Checkout Session.");
+      }
+
+      window.location.href = payload.url;
+    } catch (checkoutError) {
+      setLoading(false);
+      setError(checkoutError instanceof Error ? checkoutError.message : "Payment start failed.");
+    }
+  };
 
   return (
     <div className="absolute inset-0 z-20 flex items-center justify-center rounded-3xl bg-slate-900/35 p-4">
@@ -26,12 +69,32 @@ export function PaywallOverlay({ lessonTitle, mode }: { lessonTitle: string; mod
         {mode === "premium" && !isAuthenticated && (
           <p className="mt-1 text-xs text-slate-500">Create an account first, then upgrade to Premium.</p>
         )}
-        <Link
-          href={ctaHref}
-          className="mt-4 inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
-        >
-          {ctaLabel}
-        </Link>
+        {error && <p className="mt-3 text-xs text-rose-700">{error}</p>}
+        {mode === "premium" && isAuthenticated && lessonId ? (
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => void startLessonCheckout()}
+              disabled={loading}
+              className="inline-flex rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:bg-slate-400"
+            >
+              {loading ? "Redirecting to Stripe..." : "Unlock this block — $10"}
+            </button>
+            <Link
+              href={ctaHref}
+              className="inline-flex rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
+            >
+              View Premium options
+            </Link>
+          </div>
+        ) : (
+          <Link
+            href={ctaHref}
+            className="mt-4 inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+          >
+            {ctaLabel}
+          </Link>
+        )}
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ export type AuthUser = {
   email: string;
   isSubscribed: boolean;
   subscriptionTier?: "free" | "premium";
+  purchasedLessons?: string[];
 };
 
 type LoginPayload = {
@@ -114,6 +115,7 @@ function parseStoredUser(raw: string | null): AuthUser | null {
       name: parsed.name,
       isSubscribed: Boolean(parsed.isSubscribed),
       subscriptionTier: parsed.subscriptionTier === "premium" ? "premium" : "free",
+      purchasedLessons: Array.isArray(parsed.purchasedLessons) ? parsed.purchasedLessons : [],
     };
   } catch {
     return null;
@@ -136,6 +138,7 @@ function parseUserFromToken(rawToken: string | null): AuthUser | null {
     name: typeof payload.name === "string" ? payload.name : "User",
     isSubscribed: Boolean(payload.isSubscribed),
     subscriptionTier: payload.subscriptionTier === "premium" ? "premium" : "free",
+    purchasedLessons: Array.isArray(payload.purchasedLessons) ? payload.purchasedLessons : [],
   };
 }
 
@@ -180,6 +183,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: string;
             isSubscribed?: boolean;
             subscriptionTier?: "free" | "premium";
+            purchasedLessons?: string[];
           };
           token?: string;
         }
@@ -196,6 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: data.user.email,
       isSubscribed: Boolean(data.user.isSubscribed),
       subscriptionTier: data.user.subscriptionTier === "premium" ? "premium" : "free",
+      purchasedLessons: Array.isArray(data.user.purchasedLessons) ? data.user.purchasedLessons : [],
     };
 
     if (typeof window !== "undefined") {
@@ -247,6 +252,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: string;
       isSubscribed?: boolean;
       subscriptionTier?: "free" | "premium";
+      purchasedLessons?: string[];
     };
 
     const normalized: AuthUser = {
@@ -255,6 +261,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: data.email,
       isSubscribed: Boolean(data.isSubscribed),
       subscriptionTier: data.subscriptionTier === "premium" ? "premium" : "free",
+      purchasedLessons: Array.isArray(data.purchasedLessons) ? data.purchasedLessons : [],
     };
 
     if (typeof window !== "undefined") {

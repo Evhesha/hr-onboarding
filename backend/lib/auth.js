@@ -2,17 +2,18 @@ const jwt = require('jsonwebtoken');
 
 const jwtSecret = process.env.JWT_SECRET || 'dev-secret';
 
-function toAuthUser(user) {
+function toAuthUser(user, purchasedLessons = []) {
   return {
     id: user.id,
     name: user.name,
     email: user.email,
     isSubscribed: user.isSubscribed,
+    purchasedLessons,
   };
 }
 
-function signAuthToken(user) {
-  return jwt.sign(toAuthUser(user), jwtSecret, { expiresIn: '24h' });
+function signAuthToken(user, purchasedLessons = []) {
+  return jwt.sign(toAuthUser(user, purchasedLessons), jwtSecret, { expiresIn: '24h' });
 }
 
 function getAuthCookieOptions() {
@@ -25,8 +26,8 @@ function getAuthCookieOptions() {
   };
 }
 
-function setAuthCookie(res, user) {
-  const token = signAuthToken(user);
+function setAuthCookie(res, user, purchasedLessons = []) {
+  const token = signAuthToken(user, purchasedLessons);
   res.cookie('token', token, getAuthCookieOptions());
   return token;
 }

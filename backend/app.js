@@ -58,6 +58,8 @@ app.get('/progress', authenticateToken, userProgressController.getMyProgress);
 app.post('/progress', authenticateToken, userProgressController.upsertProgress);
 
 app.post('/billing/activate-premium', authenticateToken, billingController.activatePremium);
+app.post('/billing/activate-lesson', authenticateToken, billingController.activateLessonAccess);
+app.post('/billing/activate-lessons', authenticateToken, billingController.activateLessonsAccess);
 
 app.use((req, res) => {
   res.status(404).json({ error: `Маршрут ${req.method} ${req.originalUrl} не найден` });

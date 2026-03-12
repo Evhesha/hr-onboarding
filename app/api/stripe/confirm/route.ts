@@ -6,6 +6,7 @@ type StripeSessionResponse = {
   status?: string;
   payment_status?: string;
   mode?: string;
+  metadata?: Record<string, string>;
 };
 
 export async function POST(request: Request) {
@@ -43,7 +44,6 @@ export async function POST(request: Request) {
 
     const isSuccessful =
       stripePayload.id === sessionId &&
-      stripePayload.mode === "subscription" &&
       stripePayload.status === "complete" &&
       stripePayload.payment_status === "paid";
 
@@ -51,32 +51,90 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Stripe Checkout ещё не завершён успешно." }, { status: 400 });
     }
 
-    const backendResponse = await fetch(`${backendUrl}/billing/activate-premium`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        cookie: request.headers.get("cookie") ?? "",
-      },
-      body: JSON.stringify({ sessionId }),
-      cache: "no-store",
-    });
+    let backendResponse: Response;
+    const purchaseType = stripePayload.metadata?.purchaseType || "premium";
+    const lessonSlugFromMetadata =
+      stripePayload.metadata?.lessonSlug || stripePayload.metadata?.lesson_slug || undefined;
+
+    if (stripePayload.mode === "payment") {
+      if (purchaseType === "all") {
+        const lessonSlugsRaw = stripePayload.metadata?.lessonSlugs || "";
+        const lessonSlugs = lessonSlugsRaw
+          .split(",")
+          .map((slug) => slug.trim())
+          .filter(Boolean);
+
+        if (lessonSlugs.length === 0) {
+          return NextResponse.json({ error: "Не указан lessonSlugs для покупки всех блоков." }, { status: 400 });
+        }
+
+        backendResponse = await fetch(`${backendUrl}/billing/activate-lessons`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            cookie: request.headers.get("cookie") ?? "",
+          },
+          body: JSON.stringify({ sessionId, lessonSlugs }),
+          cache: "no-store",
+        });
+      } else {
+        const lessonSlug = lessonSlugFromMetadata;
+        if (!lessonSlug) {
+          return NextResponse.json({ error: "Не указан lessonSlug для покупки урока." }, { status: 400 });
+        }
+
+        backendResponse = await fetch(`${backendUrl}/billing/activate-lesson`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            cookie: request.headers.get("cookie") ?? "",
+          },
+          body: JSON.stringify({ sessionId, lessonSlug }),
+          cache: "no-store",
+        });
+      }
+    } else {
+      backendResponse = await fetch(`${backendUrl}/billing/activate-premium`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: request.headers.get("cookie") ?? "",
+        },
+        body: JSON.stringify({ sessionId }),
+        cache: "no-store",
+      });
+    }
 
     const contentType = backendResponse.headers.get("content-type") || "application/json";
     const setCookie = backendResponse.headers.get("set-cookie");
     const body = await backendResponse.text();
 
-    const response = new Response(body, {
-      status: backendResponse.status,
-      headers: { "Content-Type": contentType },
-    });
-
-    if (setCookie) {
-      response.headers.set("set-cookie", setCookie);
+    let responseBody: string = body;
+    if (contentType.includes("application/json")) {
+      try {
+        const parsed = JSON.parse(body) as Record<string, unknown>;
+        const enriched = {
+          ...parsed,
+          purchaseType,
+          lessonSlug: lessonSlugFromMetadata,
+        };
+        responseBody = JSON.stringify(enriched);
+      } catch {
+        responseBody = body;
+      }
     }
 
-    return response;
+    const headers = new Headers({ "Content-Type": contentType });
+    if (setCookie) {
+      headers.set("set-cookie", setCookie);
+    }
+
+    return new Response(responseBody, {
+      status: backendResponse.status,
+      headers,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "unknown";
-    return NextResponse.json({ error: `Не удалось активировать Premium: ${message}` }, { status: 500 });
+    return NextResponse.json({ error: `Не удалось активировать доступ: ${message}` }, { status: 500 });
   }
 }

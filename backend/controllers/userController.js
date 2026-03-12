@@ -1,4 +1,5 @@
 const { User } = require('../models');
+const { getPurchasedLessonSlugs } = require('../lib/purchases');
 
 // Получить профиль текущего пользователя
 exports.getProfile = async (req, res) => {
@@ -11,7 +12,12 @@ exports.getProfile = async (req, res) => {
       return res.status(404).json({ error: 'Пользователь не найден' });
     }
 
-    res.json(user);
+    const purchasedLessons = await getPurchasedLessonSlugs(user.id);
+
+    res.json({
+      ...user.toJSON(),
+      purchasedLessons,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Ошибка сервера' });

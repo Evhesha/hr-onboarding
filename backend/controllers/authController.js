@@ -1,5 +1,6 @@
 const { User } = require('../models');
 const { getAuthCookieOptions, setAuthCookie, toAuthUser } = require('../lib/auth');
+const { getPurchasedLessonSlugs } = require('../lib/purchases');
 
 // Регистрация
 exports.register = async (req, res) => {
@@ -55,10 +56,11 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: 'Неверный email или пароль' });
     }
 
-    const token = setAuthCookie(res, user);
+    const purchasedLessons = await getPurchasedLessonSlugs(user.id);
+    const token = setAuthCookie(res, user, purchasedLessons);
 
     res.json({
-      user: toAuthUser(user),
+      user: toAuthUser(user, purchasedLessons),
       token,
     });
   } catch (err) {

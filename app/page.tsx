@@ -31,7 +31,6 @@ const competencies = [
   { label: "Delegation", level: "Medium", tone: "text-slate-700", chip: "bg-slate-100 text-slate-700" },
   { label: "Conflict Navigation", level: "Medium", tone: "text-slate-700", chip: "bg-slate-100 text-slate-700" },
   { label: "Motivation", level: "High", tone: "text-emerald-700", chip: "bg-emerald-100 text-emerald-700" },
-  { label: "Coaching Mindset", level: "High", tone: "text-emerald-700", chip: "bg-emerald-100 text-emerald-700" },
 ];
 
 const learningBlocks = [
@@ -40,24 +39,28 @@ const learningBlocks = [
     description: "Build confidence in tough conversations and growth plans.",
     tags: ["Micro-lesson (free)", "Mini quiz (free)"],
     slug: "feedback",
+    access: "free",
   },
   {
     title: "Delegation",
     description: "Translate goals into clear ownership without micromanaging.",
-    tags: ["Micro-lesson (free)", "Mini quiz (free)"],
+    tags: ["Micro-lesson (Premium)", "Mini quiz (Premium)"],
     slug: "delegation",
+    access: "premium",
   },
   {
     title: "Conflict Management",
     description: "De-escalate tension and keep teams aligned under pressure.",
-    tags: ["Micro-lesson (free)", "Mini quiz (free)"],
+    tags: ["Micro-lesson (Premium)", "Mini quiz (Premium)"],
     slug: "conflict-management",
+    access: "premium",
   },
   {
     title: "Motivation",
     description: "Sustain energy, autonomy, and accountability in your team.",
-    tags: ["Micro-lesson (free)", "Mini quiz (free)"],
+    tags: ["Micro-lesson (Premium)", "Mini quiz (Premium)"],
     slug: "motivation",
+    access: "premium",
   },
 ];
 
@@ -91,11 +94,11 @@ export default function HomePage() {
             </p>
             <div>
               <h1 className="font-display text-3xl font-semibold text-slate-900 md:text-5xl">
-                Leadership onboarding that adapts to how you lead.
+                The Future of Leadership Development
               </h1>
               <p className="mt-3 max-w-2xl text-sm text-slate-600 md:text-base">
-                BrainLead is a modern learning platform for first-time managers. Take a short assessment, get a five-competency
-                snapshot, and move into targeted micro-lessons and quizzes.
+              Master Leadership Through AI-Powered Practice. Empower your managers to lead people, teams, and processes with confidence. Educational platform for leaders in charge of people, teams, and processes.
+              Featuring courses, assessments, AI-driven roleplay, and an AI mentor.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -253,7 +256,9 @@ export default function HomePage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Learning Blocks</p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-900 md:text-3xl">Four focused modules</h2>
-            <p className="mt-2 text-sm text-slate-600">Each block: micro-lesson + mini quiz (free).</p>
+            <p className="mt-2 text-sm text-slate-600">
+              The first block is free. The remaining blocks are included with Premium.
+            </p>
           </div>
           <Link
             href="/learning"

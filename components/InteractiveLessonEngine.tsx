@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Lock, StepBack, StepForward } from "lucide-react";
 import type { Lesson } from "@/constants/lessons";
 import { LessonScreenRenderer } from "@/components/LessonScreenRenderer";
@@ -18,15 +19,74 @@ type Props = {
 };
 
 export function InteractiveLessonEngine({ lesson, nextLesson = null }: Props) {
-  const { isAuthenticated, isSubscribed } = useAuth();
+  const { isAuthenticated, isSubscribed, user, refreshProfile } = useAuth();
+  const searchParams = useSearchParams();
+  const handledSessionRef = useRef<string | null>(null);
   const requiresAuth = Boolean(lesson.requiresAuth);
+  const purchasedLessons = Array.isArray(user?.purchasedLessons) ? user?.purchasedLessons : [];
+  const hasLessonAccess = lesson.premium ? purchasedLessons.includes(lesson.id) : true;
   const lockMode = lesson.premium ? "premium" : requiresAuth ? "auth" : "none";
-  const locked = lockMode === "premium" ? !isSubscribed : lockMode === "auth" ? !isAuthenticated : false;
+  const locked = lockMode === "premium" ? !isSubscribed && !hasLessonAccess : lockMode === "auth" ? !isAuthenticated : false;
   const totalSteps = Math.max(1, lesson.screens.length);
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [purchaseNotice, setPurchaseNotice] = useState<string | null>(null);
   const effectiveStep = currentStep;
   const effectiveLoaded = isLoaded;
+
+  useEffect(() => {
+    const purchaseStatus = searchParams.get("purchase");
+    const sessionId = searchParams.get("session_id");
+
+    if (!purchaseStatus || !sessionId) {
+      return;
+    }
+
+    if (handledSessionRef.current === sessionId) {
+      return;
+    }
+
+    handledSessionRef.current = sessionId;
+
+    if (purchaseStatus === "cancel") {
+      setPurchaseNotice("Payment canceled. You can try again anytime.");
+      return;
+    }
+
+    if (purchaseStatus !== "success") {
+      return;
+    }
+
+    let isCancelled = false;
+    setPurchaseNotice("Confirming payment and unlocking this block...");
+
+    void fetch("/api/stripe/confirm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ sessionId }),
+    })
+      .then(async (response) => {
+        const payload = (await response.json()) as { error?: string };
+        if (!response.ok) {
+          throw new Error(payload.error || "Unable to confirm payment.");
+        }
+        await refreshProfile();
+        if (!isCancelled) {
+          setPurchaseNotice("Payment confirmed. This block is now unlocked.");
+        }
+      })
+      .catch((confirmError) => {
+        if (isCancelled) return;
+        setPurchaseNotice(
+          confirmError instanceof Error ? confirmError.message : "Payment confirmation failed. Please contact support.",
+        );
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [refreshProfile, searchParams]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -75,6 +135,12 @@ export function InteractiveLessonEngine({ lesson, nextLesson = null }: Props) {
         <h1 className="text-3xl font-black">{lesson.title}</h1>
         <p className="mt-2 text-sm text-cyan-100">{lesson.subtitle}</p>
       </header>
+
+      {purchaseNotice && (
+        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+          {purchaseNotice}
+        </div>
+      )}
 
       <div className="relative">
         <div className={`space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-4 md:p-6 ${locked ? "blur-sm" : ""}`}>
@@ -139,7 +205,13 @@ export function InteractiveLessonEngine({ lesson, nextLesson = null }: Props) {
           </div>
         </div>
 
-        {locked && <PaywallOverlay lessonTitle={lesson.shortTitle} mode={lockMode === "premium" ? "premium" : "auth"} />}
+        {locked && (
+          <PaywallOverlay
+            lessonTitle={lesson.shortTitle}
+            lessonId={lesson.id}
+            mode={lockMode === "premium" ? "premium" : "auth"}
+          />
+        )}
       </div>
     </section>
   );
