@@ -119,7 +119,7 @@ export default function HomePage() {
 
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Personalization Preview</p>
-            <h2 className="mt-2 text-lg font-semibold text-slate-900">5-competency snapshot</h2>
+            <h2 className="mt-2 text-lg font-semibold text-slate-900">4-competency snapshot</h2>
             <p className="mt-2 text-sm text-slate-600">
               A fast readiness check focused on the daily behaviors of effective managers.
             </p>

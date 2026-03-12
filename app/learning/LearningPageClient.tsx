@@ -216,6 +216,13 @@ export default function LearningPageClient() {
                 })}
               </div>
               <div className="mt-5 grid gap-2">
+              <Link
+                  href={`/lesson/${block.slug}?tab=lessons`}
+                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-white"
+                >
+                  Lessons
+                  <ArrowRight size={14} />
+                </Link>
                 <Link
                   href={`/lesson/${block.slug}?tab=test`}
                   className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-white"
@@ -224,10 +231,10 @@ export default function LearningPageClient() {
                   <ArrowRight size={14} />
                 </Link>
                 <Link
-                  href={`/lesson/${block.slug}?tab=lessons`}
+                  href={`/lesson/${block.slug}?tab=playbook`}
                   className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-white"
                 >
-                  Lessons
+                  Trainer (coming soon)
                   <ArrowRight size={14} />
                 </Link>
               </div>
