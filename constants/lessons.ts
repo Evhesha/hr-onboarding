@@ -4,6 +4,7 @@ export type QuizQuestion = {
   question: string;
   options: string[];
   correctIndex: number;
+  correctIndices?: number[];
   explanation: string;
 };
 
@@ -22,6 +23,7 @@ export type LessonScreen =
       subtitle?: string;
       imageUrl?: string;
       imageAlt?: string;
+      tab?: "lessons" | "test";
       items: string[];
       feedback?: ChecklistFeedback[];
     }
@@ -32,6 +34,7 @@ export type LessonScreen =
       subtitle?: string;
       imageUrl?: string;
       imageAlt?: string;
+      tab?: "lessons" | "test";
       videoUrl: string;
       captions: string[];
     }
@@ -42,6 +45,7 @@ export type LessonScreen =
       subtitle?: string;
       imageUrl?: string;
       imageAlt?: string;
+      tab?: "lessons" | "test";
       question: QuizQuestion;
     }
   | {
@@ -51,6 +55,7 @@ export type LessonScreen =
       subtitle?: string;
       imageUrl?: string;
       imageAlt?: string;
+      tab?: "lessons" | "test";
       steps: Array<{ title: string; details: string }>;
     };
 

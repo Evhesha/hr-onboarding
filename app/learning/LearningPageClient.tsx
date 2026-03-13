@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
+import { fetchAllLessonProgress } from "@/lib/lessonProgress";
 
 const learningBlocks = [
   {
@@ -42,6 +43,7 @@ export default function LearningPageClient() {
   const searchParams = useSearchParams();
   const [allLoading, setAllLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [progressMap, setProgressMap] = useState<Record<string, { isCompleted: boolean }>>({});
   const purchasedLessons = Array.isArray(user?.purchasedLessons) ? user?.purchasedLessons : [];
   const premiumSlugs = useMemo(
     () => learningBlocks.filter((block) => block.access === "premium").map((block) => block.slug),
@@ -100,6 +102,26 @@ export default function LearningPageClient() {
       isCancelled = true;
     };
   }, [refreshProfile, searchParams]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    fetchAllLessonProgress(isAuthenticated)
+      .then((map) => {
+        if (!isCancelled) {
+          setProgressMap(map);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setProgressMap({});
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isAuthenticated]);
 
   const startAllCheckout = async () => {
     if (!isAuthenticated) {
@@ -179,8 +201,14 @@ export default function LearningPageClient() {
         {learningBlocks.map((block) => {
           const isPremium = block.access === "premium";
           const isUnlocked = !isPremium || purchasedLessons.includes(block.slug);
+          const isCompleted = Boolean(progressMap[block.slug]?.isCompleted);
           return (
-            <div key={block.slug} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div
+              key={block.slug}
+              className={`rounded-2xl border p-5 shadow-sm ${
+                isCompleted ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-white"
+              }`}
+            >
               <div className="flex w-full items-start justify-between gap-3 text-left">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900">{block.title}</h2>
@@ -200,6 +228,11 @@ export default function LearningPageClient() {
                   </span>
                 )}
               </div>
+              {isCompleted && (
+                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                  Completed
+                </p>
+              )}
               <div className="mt-4 flex flex-wrap gap-2">
                 {block.tags.map((tag) => {
                   const isPremium = tag.includes("Premium");

@@ -21,13 +21,18 @@ type Props = {
 export function InteractiveLessonEngine({ lesson, nextLesson = null }: Props) {
   const { isAuthenticated, isSubscribed, user, refreshProfile } = useAuth();
   const searchParams = useSearchParams();
+  const activeTab = searchParams.get("tab") === "test" ? "test" : "lessons";
   const handledSessionRef = useRef<string | null>(null);
   const requiresAuth = Boolean(lesson.requiresAuth);
   const purchasedLessons = Array.isArray(user?.purchasedLessons) ? user?.purchasedLessons : [];
   const hasLessonAccess = lesson.premium ? purchasedLessons.includes(lesson.id) : true;
   const lockMode = lesson.premium ? "premium" : requiresAuth ? "auth" : "none";
   const locked = lockMode === "premium" ? !isSubscribed && !hasLessonAccess : lockMode === "auth" ? !isAuthenticated : false;
-  const totalSteps = Math.max(1, lesson.screens.length);
+  const filteredScreens = useMemo(
+    () => lesson.screens.filter((screen) => (screen.tab ?? "lessons") === activeTab),
+    [activeTab, lesson.screens],
+  );
+  const totalSteps = Math.max(1, filteredScreens.length);
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
   const [purchaseNotice, setPurchaseNotice] = useState<string | null>(null);
@@ -123,8 +128,8 @@ export function InteractiveLessonEngine({ lesson, nextLesson = null }: Props) {
   }, [currentStep, isAuthenticated, isLoaded, lesson.id, locked, totalSteps]);
 
   const activeScreen = useMemo(
-    () => lesson.screens[Math.max(0, Math.min(lesson.screens.length - 1, effectiveStep - 1))],
-    [lesson.screens, effectiveStep],
+    () => filteredScreens[Math.max(0, Math.min(filteredScreens.length - 1, effectiveStep - 1))],
+    [filteredScreens, effectiveStep],
   );
   const isCompleted = effectiveStep === totalSteps;
 
@@ -160,9 +165,15 @@ export function InteractiveLessonEngine({ lesson, nextLesson = null }: Props) {
             />
           </div>
 
-          <div key={activeScreen.id} className="animate-fade-slide rounded-3xl border border-slate-200 bg-white p-4 md:p-6">
-            <LessonScreenRenderer screen={activeScreen} />
-          </div>
+          {activeScreen ? (
+            <div key={activeScreen.id} className="animate-fade-slide rounded-3xl border border-slate-200 bg-white p-4 md:p-6">
+              <LessonScreenRenderer screen={activeScreen} />
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+              Нет контента для выбранной вкладки.
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <button
@@ -177,10 +188,10 @@ export function InteractiveLessonEngine({ lesson, nextLesson = null }: Props) {
             {isCompleted ? (
               <div className="flex flex-wrap items-center justify-end gap-2">
                 <Link
-                  href="/"
+                  href="/learning"
                   className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
                 >
-                  На dashboard
+                  To learning
                 </Link>
                 {nextLesson ? (
                   <Link

@@ -14,12 +14,17 @@ function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
 
+function isNumberArray(value: unknown): value is number[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "number");
+}
+
 function isQuizQuestion(value: unknown): value is QuizQuestion {
   return (
     isObject(value) &&
     typeof value.question === "string" &&
     isStringArray(value.options) &&
     typeof value.correctIndex === "number" &&
+    (!("correctIndices" in value) || value.correctIndices === undefined || isNumberArray(value.correctIndices)) &&
     typeof value.explanation === "string"
   );
 }
@@ -48,6 +53,10 @@ function isLessonScreen(value: unknown): value is LessonScreen {
   }
 
   if ("imageAlt" in value && value.imageAlt !== undefined && typeof value.imageAlt !== "string") {
+    return false;
+  }
+
+  if ("tab" in value && value.tab !== undefined && value.tab !== "lessons" && value.tab !== "test") {
     return false;
   }
 

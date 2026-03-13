@@ -44,6 +44,7 @@ export function LessonScreenRenderer({ screen }: Props) {
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [showCaptions, setShowCaptions] = useState(true);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
   const [expandedProtocolStep, setExpandedProtocolStep] = useState<number | null>(0);
   const checklistItemsCount = screen.type === "checklist" ? screen.items.length : 0;
 
@@ -208,25 +209,52 @@ export function LessonScreenRenderer({ screen }: Props) {
     }
 
     case "quiz": {
-      const isAnswered = selectedOption !== null;
-      const isCorrect = selectedOption === screen.question.correctIndex;
+      const correctIndices =
+        Array.isArray(screen.question.correctIndices) && screen.question.correctIndices.length > 0
+          ? screen.question.correctIndices
+          : [screen.question.correctIndex];
+      const isMultiSelect = correctIndices.length > 1;
+      const selectedIndices = isMultiSelect
+        ? selectedOptions
+        : selectedOption !== null
+          ? [selectedOption]
+          : [];
+      const correctSelectedCount = selectedIndices.filter((value) => correctIndices.includes(value)).length;
+      const correctTotal = correctIndices.length;
+      const correctProgress = correctTotal > 0 ? Math.round((correctSelectedCount / correctTotal) * 100) : 0;
+      const normalizedSelected = [...selectedIndices].sort((a, b) => a - b);
+      const normalizedCorrect = [...correctIndices].sort((a, b) => a - b);
+      const isAnswered = selectedIndices.length > 0;
+      const isCorrect =
+        isAnswered &&
+        normalizedSelected.length === normalizedCorrect.length &&
+        normalizedSelected.every((value, idx) => value === normalizedCorrect[idx]);
 
       return (
         <section className="space-y-4">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">{screen.title}</h2>
             <p className="mt-1 text-sm text-slate-700">{screen.question.question}</p>
+            {isMultiSelect && <p className="mt-1 text-xs font-semibold text-slate-500">Select all that apply</p>}
           </div>
           {screenImage}
 
           <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-4">
             {screen.question.options.map((option, idx) => {
-              const picked = selectedOption === idx;
+              const picked = isMultiSelect ? selectedOptions.includes(idx) : selectedOption === idx;
               return (
                 <button
                   key={option}
                   type="button"
-                  onClick={() => setSelectedOption(idx)}
+                  onClick={() => {
+                    if (isMultiSelect) {
+                      setSelectedOptions((prev) =>
+                        prev.includes(idx) ? prev.filter((value) => value !== idx) : [...prev, idx],
+                      );
+                      return;
+                    }
+                    setSelectedOption(idx);
+                  }}
                   className={`w-full rounded-xl border px-3 py-2 text-left text-sm transition ${
                     picked
                       ? "border-cyan-500 bg-cyan-50 text-cyan-900"
@@ -237,6 +265,19 @@ export function LessonScreenRenderer({ screen }: Props) {
                 </button>
               );
             })}
+            {isMultiSelect && (
+              <div className="pt-2">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Correct picks: {correctSelectedCount}/{correctTotal}
+                </p>
+                <div className="h-2 w-full rounded-full bg-slate-200">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all"
+                    style={{ width: `${correctProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {isAnswered && (

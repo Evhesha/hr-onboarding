@@ -1,0 +1,231 @@
+{
+  "id": "feedback",
+  "title": "Feedback",
+  "shortTitle": "Feedback",
+  "subtitle": "Learn how to give constructive feedback that builds trust and performance.",
+  "premium": false,
+  "requiresAuth": false,
+  "chain": {
+    "a": "Clarity",
+    "b": "Safety",
+    "c": "Growth"
+  },
+  "readinessChecks": [
+    "I know the purpose of the feedback.",
+    "I can describe the facts without emotions.",
+    "I can propose a next step together."
+  ],
+  "quiz": [
+    {
+      "question": "What types of feedback do you know?",
+      "options": [
+        "Appreciation",
+        "Mentoring",
+        "Evaluation",
+        "Criticism",
+        "Exchange of opinions"
+      ],
+      "correctIndex": 0,
+      "explanation": "All listed items are types of feedback.",
+      "correctIndices": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "question": "In what cases is feedback in the form of mentoring used?",
+      "options": [
+        "If you need to develop an employee's skills",
+        "If you need to point out an employee's mistake",
+        "If you need to praise an employee"
+      ],
+      "correctIndex": 0,
+      "explanation": "Mentoring feedback is used to develop skills."
+    },
+    {
+      "question": "Select the steps of the \"6 Steps\" scenario.",
+      "options": [
+        "Request permission",
+        "Facts without emotions",
+        "Consequences",
+        "Pause and question",
+        "Search for a solution",
+        "Checkpoint",
+        "Request for resources",
+        "Finding out the reasons"
+      ],
+      "correctIndex": 0,
+      "explanation": "The 6 steps are: request permission, facts, consequences, pause/question, search for a solution, checkpoint.",
+      "correctIndices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "question": "Does an employee have the right to give feedback to a manager?",
+      "options": [
+        "Yes",
+        "No",
+        "Yes, if the manager asks for it"
+      ],
+      "correctIndex": 0,
+      "explanation": "Feedback can flow both ways."
+    },
+    {
+      "question": "Choose the correct question to ask for feedback.",
+      "options": [
+        "How am I doing?",
+        "Is everything going well in my work?",
+        "Tell me, what did I do well in the project, and what do I need to improve?"
+      ],
+      "correctIndex": 2,
+      "explanation": "The best question is specific and invites actionable feedback."
+    }
+  ],
+  "screens": [
+    {
+      "id": "feedback-video-1",
+      "type": "video",
+      "title": "Feedback fundamentals",
+      "subtitle": "Why feedback matters and when to use it.",
+      "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "captions": [
+        "Define the goal of the conversation.",
+        "Separate facts from emotions.",
+        "Keep the tone supportive."
+      ],
+      "tab": "lessons"
+    },
+    {
+      "id": "feedback-video-2",
+      "type": "video",
+      "title": "Mentoring vs evaluation",
+      "subtitle": "Pick the right feedback format.",
+      "videoUrl": "https://www.youtube.com/watch?v=oHg5SJYRHA0",
+      "captions": [
+        "Mentoring builds skill over time.",
+        "Evaluation focuses on results.",
+        "Choose the right moment."
+      ],
+      "tab": "lessons"
+    },
+    {
+      "id": "feedback-video-3",
+      "type": "video",
+      "title": "The 6-step feedback script",
+      "subtitle": "A simple structure for tough conversations.",
+      "videoUrl": "https://www.youtube.com/watch?v=3GwjfUFyY6M",
+      "captions": [
+        "Request permission.",
+        "State facts without emotions.",
+        "Ask for a solution together."
+      ],
+      "tab": "lessons"
+    },
+    {
+      "id": "feedback-quiz-1",
+      "type": "quiz",
+      "title": "Quick check: feedback types",
+      "question": {
+        "question": "What types of feedback do you know?",
+        "options": [
+          "Appreciation",
+          "Mentoring",
+          "Evaluation",
+          "Criticism",
+          "Exchange of opinions"
+        ],
+        "correctIndex": 0,
+        "explanation": "All listed items are types of feedback.",
+        "correctIndices": [
+          0,
+          1,
+          2
+        ]
+      },
+      "tab": "test"
+    },
+    {
+      "id": "feedback-quiz-2",
+      "type": "quiz",
+      "title": "Quick check: mentoring",
+      "question": {
+        "question": "In what cases is feedback in the form of mentoring used?",
+        "options": [
+          "If you need to develop an employee's skills",
+          "If you need to point out an employee's mistake",
+          "If you need to praise an employee"
+        ],
+        "correctIndex": 0,
+        "explanation": "Mentoring feedback is used to develop skills."
+      },
+      "tab": "test"
+    },
+    {
+      "id": "feedback-quiz-3",
+      "type": "quiz",
+      "title": "Quick check: 6 steps",
+      "question": {
+        "question": "Select the steps of the \"6 Steps\" scenario.",
+        "options": [
+          "Request permission",
+          "Facts without emotions",
+          "Consequences",
+          "Pause and question",
+          "Search for a solution",
+          "Checkpoint",
+          "Request for resources",
+          "Finding out the reasons"
+        ],
+        "correctIndex": 0,
+        "explanation": "The 6 steps are: request permission, facts, consequences, pause/question, search for a solution, checkpoint.",
+        "correctIndices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "tab": "test"
+    },
+    {
+      "id": "feedback-quiz-4",
+      "type": "quiz",
+      "title": "Quick check: feedback rights",
+      "question": {
+        "question": "Does an employee have the right to give feedback to a manager?",
+        "options": [
+          "Yes",
+          "No",
+          "Yes, if the manager asks for it"
+        ],
+        "correctIndex": 0,
+        "explanation": "Feedback can flow both ways."
+      },
+      "tab": "test"
+    },
+    {
+      "id": "feedback-quiz-5",
+      "type": "quiz",
+      "title": "Quick check: ask for feedback",
+      "question": {
+        "question": "Choose the correct question to ask for feedback.",
+        "options": [
+          "How am I doing?",
+          "Is everything going well in my work?",
+          "Tell me, what did I do well in the project, and what do I need to improve?"
+        ],
+        "correctIndex": 2,
+        "explanation": "The best question is specific and invites actionable feedback."
+      },
+      "tab": "test"
+    }
+  ]
+}
