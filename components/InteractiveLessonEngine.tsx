@@ -171,7 +171,7 @@ export function InteractiveLessonEngine({ lesson, nextLesson = null }: Props) {
             </div>
           ) : (
             <div className="rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
-              Нет контента для выбранной вкладки.
+              No content for the selected tab.
             </div>
           )}
 

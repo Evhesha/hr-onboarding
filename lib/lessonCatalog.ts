@@ -3,8 +3,10 @@ import "server-only";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { type ChecklistFeedback, type Lesson, type LessonScreen, type QuizQuestion } from "@/constants/lessons";
+import feedbackLesson from "@/lessons/feedback.json";
 
 const LESSONS_DIR = path.join(process.cwd(), "lessons");
+const STATIC_LESSONS: Lesson[] = [feedbackLesson as Lesson];
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -137,26 +139,31 @@ async function loadLessonFromFile(fileName: string): Promise<Lesson | null> {
 }
 
 export async function getLessons(): Promise<Lesson[]> {
-  const fileNames = await readdir(LESSONS_DIR);
-  const lessons = await Promise.all(
-    fileNames
-      .filter((fileName) => fileName.endsWith(".json"))
-      .sort((left, right) => left.localeCompare(right))
-      .map((fileName) => loadLessonFromFile(fileName)),
-  );
+  try {
+    const fileNames = await readdir(LESSONS_DIR);
+    const lessons = await Promise.all(
+      fileNames
+        .filter((fileName) => fileName.endsWith(".json"))
+        .sort((left, right) => left.localeCompare(right))
+        .map((fileName) => loadLessonFromFile(fileName)),
+    );
 
-  return lessons
-    .filter((lesson): lesson is Lesson => lesson !== null)
-    .sort((left, right) => {
-      const leftRank = lessonAccessRank(left);
-      const rightRank = lessonAccessRank(right);
+    return lessons
+      .filter((lesson): lesson is Lesson => lesson !== null)
+      .sort((left, right) => {
+        const leftRank = lessonAccessRank(left);
+        const rightRank = lessonAccessRank(right);
 
-      if (leftRank !== rightRank) {
-        return leftRank - rightRank;
-      }
+        if (leftRank !== rightRank) {
+          return leftRank - rightRank;
+        }
 
-      return left.title.localeCompare(right.title, "ru");
-    });
+        return left.title.localeCompare(right.title, "ru");
+      });
+  } catch (error) {
+    console.warn("Falling back to bundled lessons catalog:", error);
+    return STATIC_LESSONS.filter(isLesson);
+  }
 }
 
 export async function getLessonById(id: string): Promise<Lesson | undefined> {
