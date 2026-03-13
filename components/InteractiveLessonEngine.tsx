@@ -26,8 +26,20 @@ export function InteractiveLessonEngine({ lesson, nextLesson = null }: Props) {
   const requiresAuth = Boolean(lesson.requiresAuth);
   const purchasedLessons = Array.isArray(user?.purchasedLessons) ? user?.purchasedLessons : [];
   const hasLessonAccess = lesson.premium ? purchasedLessons.includes(lesson.id) : true;
-  const lockMode = lesson.premium ? "premium" : requiresAuth ? "auth" : "none";
-  const locked = lockMode === "premium" ? !isSubscribed && !hasLessonAccess : lockMode === "auth" ? !isAuthenticated : false;
+  const tabRequiresAuth = activeTab === "test";
+  const lockMode = lesson.premium
+    ? "premium"
+    : tabRequiresAuth
+      ? "auth"
+      : requiresAuth
+        ? "auth"
+        : "none";
+  const locked =
+    lockMode === "premium"
+      ? !isSubscribed && !hasLessonAccess
+      : lockMode === "auth"
+        ? !isAuthenticated
+        : false;
   const filteredScreens = useMemo(
     () => lesson.screens.filter((screen) => (screen.tab ?? "lessons") === activeTab),
     [activeTab, lesson.screens],

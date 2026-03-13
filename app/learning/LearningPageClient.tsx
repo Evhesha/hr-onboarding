@@ -42,6 +42,7 @@ export default function LearningPageClient() {
   const { isAuthenticated, user, refreshProfile } = useAuth();
   const searchParams = useSearchParams();
   const [allLoading, setAllLoading] = useState(false);
+  const [lessonLoading, setLessonLoading] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [progressMap, setProgressMap] = useState<Record<string, { isCompleted: boolean }>>({});
   const purchasedLessons = Array.isArray(user?.purchasedLessons) ? user?.purchasedLessons : [];
@@ -279,6 +280,7 @@ export default function LearningPageClient() {
                       window.location.href = "/auth";
                       return;
                     }
+                    setLessonLoading(block.slug);
                     try {
                       const response = await fetch("/api/stripe/checkout", {
                         method: "POST",
@@ -301,12 +303,14 @@ export default function LearningPageClient() {
 
                       window.location.href = payload.url;
                     } catch (checkoutError) {
+                      setLessonLoading(null);
                       setNotice(checkoutError instanceof Error ? checkoutError.message : "Payment start failed.");
                     }
                   }}
-                  className="mt-4 w-full rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
+                  disabled={lessonLoading === block.slug}
+                  className="mt-4 w-full rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:bg-slate-400"
                 >
-                  Unlock this block — $10
+                  {lessonLoading === block.slug ? "Redirecting to Stripe..." : "Unlock this block — $10"}
                 </button>
               )}
             </div>
