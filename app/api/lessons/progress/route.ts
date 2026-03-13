@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { resolveBackendUrl } from "@/lib/backendUrl";
 
 export async function GET(request: Request) {
-  const backendUrl = resolveBackendUrl();
+  let backendUrl = "";
 
   try {
+    backendUrl = resolveBackendUrl();
     const backendResponse = await fetch(`${backendUrl}/lessons/progress`, {
       method: "GET",
       headers: {
@@ -23,7 +24,7 @@ export async function GET(request: Request) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "unknown";
     return NextResponse.json(
-      { error: `Lessons backend недоступен (${backendUrl}): ${message}` },
+      { error: `Lessons backend недоступен (${backendUrl || "BACKEND_URL not configured"}): ${message}` },
       { status: 503 },
     );
   }

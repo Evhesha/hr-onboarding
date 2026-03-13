@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { resolveBackendUrl } from "@/lib/backendUrl";
 
 export async function POST() {
-  const backendUrl = resolveBackendUrl();
+  let backendUrl = "";
 
   try {
+    backendUrl = resolveBackendUrl();
     const backendResponse = await fetch(`${backendUrl}/logout`, {
       method: "POST",
       cache: "no-store",
@@ -27,7 +28,7 @@ export async function POST() {
   } catch (error) {
     const message = error instanceof Error ? error.message : "unknown";
     return NextResponse.json(
-      { error: `Auth backend недоступен (${backendUrl}): ${message}` },
+      { error: `Auth backend недоступен (${backendUrl || "BACKEND_URL not configured"}): ${message}` },
       { status: 503 },
     );
   }

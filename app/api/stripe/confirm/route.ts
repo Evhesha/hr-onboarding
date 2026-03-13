@@ -10,7 +10,6 @@ type StripeSessionResponse = {
 };
 
 export async function POST(request: Request) {
-  const backendUrl = resolveBackendUrl();
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
   if (!secretKey) {
@@ -18,6 +17,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    const backendUrl = resolveBackendUrl();
     const { sessionId } = (await request.json()) as { sessionId?: string };
     if (!sessionId) {
       return NextResponse.json({ error: "sessionId обязателен." }, { status: 400 });

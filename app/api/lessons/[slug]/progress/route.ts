@@ -6,9 +6,10 @@ type RouteContext = {
 };
 
 export async function GET(request: Request, { params }: RouteContext) {
-  const backendUrl = resolveBackendUrl();
+  let backendUrl = "";
 
   try {
+    backendUrl = resolveBackendUrl();
     const { slug } = await params;
 
     const backendResponse = await fetch(`${backendUrl}/lessons/${slug}`, {
@@ -29,16 +30,17 @@ export async function GET(request: Request, { params }: RouteContext) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "unknown";
     return NextResponse.json(
-      { error: `Lessons backend недоступен (${backendUrl}): ${message}` },
+      { error: `Lessons backend недоступен (${backendUrl || "BACKEND_URL not configured"}): ${message}` },
       { status: 503 },
     );
   }
 }
 
 export async function PATCH(request: Request, { params }: RouteContext) {
-  const backendUrl = resolveBackendUrl();
+  let backendUrl = "";
 
   try {
+    backendUrl = resolveBackendUrl();
     const { slug } = await params;
     const payload = await request.json();
 
@@ -62,7 +64,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "unknown";
     return NextResponse.json(
-      { error: `Lessons backend недоступен (${backendUrl}): ${message}` },
+      { error: `Lessons backend недоступен (${backendUrl || "BACKEND_URL not configured"}): ${message}` },
       { status: 503 },
     );
   }

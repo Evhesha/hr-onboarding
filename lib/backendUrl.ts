@@ -1,5 +1,5 @@
 export function resolveBackendUrl() {
-  const configured = process.env.BACKEND_URL;
+  const configured = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
   if (configured) {
     return configured;
   }
