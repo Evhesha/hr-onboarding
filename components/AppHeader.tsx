@@ -12,7 +12,7 @@ const navItems = [
 
 export function AppHeader() {
   const pathname = usePathname();
-  const { isAuthenticated, isSubscribed, user } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur">
@@ -38,13 +38,6 @@ export function AppHeader() {
               }`}
             >
               <span className="max-w-[140px] truncate">{user.name}</span>
-              <span
-                className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                  isSubscribed ? "bg-teal-100 text-teal-700" : "bg-slate-200 text-slate-700"
-                }`}
-              >
-                {isSubscribed ? "Premium" : "Free"}
-              </span>
             </Link>
           ) : (
             <Link

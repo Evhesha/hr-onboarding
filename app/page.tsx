@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+import { useAuth } from "@/app/context/AuthContext";
 
 const COOKIE_NAME = "assessment_results";
 
@@ -64,6 +65,10 @@ const learningBlocks = [
   },
 ];
 
+const premiumLessonSlugs = learningBlocks
+  .filter((block) => block.access === "premium")
+  .map((block) => block.slug);
+
 const assessmentLabels: Record<string, string> = {
   feedback: "Feedback",
   delegation: "Delegation",
@@ -73,6 +78,9 @@ const assessmentLabels: Record<string, string> = {
 
 export default function HomePage() {
   const [latestResult, setLatestResult] = useState<{ score: number; completedAt: string; testId: string } | null>(null);
+  const [premiumLoading, setPremiumLoading] = useState(false);
+  const [premiumError, setPremiumError] = useState<string | null>(null);
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     const saved = readResultsCookie();
@@ -80,6 +88,41 @@ export default function HomePage() {
     const result = saved.results?.[saved.latestTestId];
     if (result) setLatestResult({ ...result, testId: saved.latestTestId });
   }, []);
+
+  const startAllCheckout = async () => {
+    if (!isAuthenticated) {
+      window.location.href = "/auth";
+      return;
+    }
+
+    setPremiumError(null);
+    setPremiumLoading(true);
+
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: user?.name || "",
+          email: user?.email || "",
+          purchaseType: "all",
+          lessonSlugs: premiumLessonSlugs,
+          source: "home-premium-cta",
+        }),
+      });
+
+      const payload = (await response.json()) as { url?: string; error?: string };
+
+      if (!response.ok || !payload.url) {
+        throw new Error(payload.error || "Unable to create Stripe Checkout Session.");
+      }
+
+      window.location.href = payload.url;
+    } catch (checkoutError) {
+      setPremiumLoading(false);
+      setPremiumError(checkoutError instanceof Error ? checkoutError.message : "Payment start failed.");
+    }
+  };
 
   return (
     <div className="space-y-12">
@@ -242,32 +285,20 @@ export default function HomePage() {
           <p className="mt-2 text-sm text-slate-600">
             Get a detailed competency report, tailored practice sprints, and manager coaching prompts.
           </p>
-          <Link
-            href="/premium"
-            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
+          <button
+            type="button"
+            onClick={() => void startAllCheckout()}
+            disabled={premiumLoading}
+            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:bg-slate-300"
           >
-            View premium insights <ArrowRight size={16} />
-          </Link>
+            {premiumLoading ? "Redirecting to Stripe..." : "View premium insights"} <ArrowRight size={16} />
+          </button>
+          {premiumError && (
+            <p className="mt-3 text-sm text-rose-600">{premiumError}</p>
+          )}
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Learning Blocks</p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900 md:text-3xl">Four focused modules</h2>
-            <p className="mt-2 text-sm text-slate-600">
-              The first block is free. The remaining blocks are included with Premium.
-            </p>
-          </div>
-          <Link
-            href="/learning"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
-          >
-            Open modules <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
     </div>
   );
 }

@@ -221,6 +221,11 @@ export default function ProfilePage() {
     return { completed, inProgress, totalPercent };
   }, [lessons, progressMap]);
 
+  const purchasedLessons = useMemo(() => {
+    const purchasedIds = new Set(user?.purchasedLessons ?? []);
+    return lessons.filter((lesson) => purchasedIds.has(lesson.id));
+  }, [lessons, user?.purchasedLessons]);
+
   if (!isAuthenticated || !user) {
     return (
       <div className="bg-[radial-gradient(circle_at_top,#dbeafe,transparent_24%),linear-gradient(180deg,#f8fbff_0%,#f8fafc_55%,#eef4ff_100%)] text-slate-900">
@@ -265,11 +270,6 @@ export default function ProfilePage() {
                   <h1 className="text-3xl font-black tracking-tight md:text-4xl">{user.name}</h1>
                   <p className="mt-1 text-base text-slate-500">{user.email}</p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${isSubscribed ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
-                    {isSubscribed ? "Premium active" : "Free plan"}
-                  </span>
-                </div>
               </div>
             </div>
 
@@ -294,17 +294,30 @@ export default function ProfilePage() {
           <article className="rounded-[30px] border border-white/80 bg-white/85 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.07)] backdrop-blur">
             <div className="mb-5 flex items-center gap-2">
               <ShieldCheck className="text-emerald-600" size={20} />
-              <h2 className="text-xl font-black">Subscription</h2>
+              <h2 className="text-xl font-black">Payments</h2>
             </div>
 
             <div className="space-y-3">
               <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
-                <span className="text-sm text-slate-500">Status</span>
-                <span className={`font-bold ${isSubscribed ? "text-emerald-700" : "text-slate-700"}`}>{isSubscribed ? "Active" : "Inactive"}</span>
+                <span className="text-sm text-slate-500">Purchased lessons</span>
+                <span className="font-bold text-slate-900">{purchasedLessons.length}</span>
               </div>
-              <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
-                <span className="text-sm text-slate-500">Plan</span>
-                <span className="font-bold text-slate-900">{isSubscribed ? "Premium" : "Free"}</span>
+              <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                <div className="text-sm text-slate-500">Your lessons</div>
+                {purchasedLessons.length > 0 ? (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {purchasedLessons.map((lesson) => (
+                      <span
+                        key={lesson.id}
+                        className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700"
+                      >
+                        {lesson.title}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-sm text-slate-600">No lessons purchased yet.</p>
+                )}
               </div>
             </div>
 
